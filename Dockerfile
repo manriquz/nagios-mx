@@ -6,9 +6,9 @@ LABEL maintainer="cmanriquez"
 RUN apt-get update && \
     apt-get install -y wget build-essential apache2 php gcc make libgd-dev unzip libapache2-mod-php curl libssl-dev openssl apache2-utils
 
-# Crea grupo y usuario nagios si no existen
-RUN groupadd -f nagios && \
-    useradd -M -g nagios -s /sbin/nologin nagios && \
+# Crea grupo y usuario nagios si no existen (forma segura)
+RUN getent group nagios || groupadd nagios && \
+    id -u nagios || useradd -M -s /sbin/nologin -g nagios nagios && \
     usermod -a -G nagios www-data
 
 # Descargar y compilar Nagios Core
