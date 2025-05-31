@@ -1,0 +1,39 @@
+{
+    "family": "nagios-task",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "nagios-container",
+            "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/nagios-core:latest",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "mountPoints": [
+                {
+                    "sourceVolume": "nagios-data",
+                    "containerPath": "/usr/local/nagios"
+                }
+            ],
+            "essential": true
+        }
+    ],
+    "volumes": [
+        {
+            "name": "nagios-data",
+            "efsVolumeConfiguration": {
+                "fileSystemId": "<EFS_ID>",
+                "rootDirectory": "/",
+                "transitEncryption": "ENABLED"
+            }
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "1024",
+    "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole"
+}
