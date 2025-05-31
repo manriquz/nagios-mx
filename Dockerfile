@@ -10,7 +10,7 @@ ENV NAGIOS_GROUP=nagios
 RUN apt-get update && \
     apt-get install -y wget build-essential apache2 php gcc make libgd-dev unzip libapache2-mod-php curl libssl-dev openssl apache2-utils
 
-# Crear grupo y usuario Nagios solo si no existen
+# Crea grupo y usuario solo si no existen
 RUN groupadd -f $NAGIOS_GROUP && \
     id -u $NAGIOS_USER &>/dev/null || useradd -m -g $NAGIOS_GROUP $NAGIOS_USER && \
     usermod -a -G $NAGIOS_GROUP www-data
@@ -28,16 +28,18 @@ RUN wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.14.t
     make install-commandmode && \
     make install-webconf
 
-# Descargar e instalar plugins (nueva URL por seguridad)
-RUN wget https://www.nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz && \
+# Descargar e instalar Nagios Plugins
+RUN wget https://nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz && \
     tar -xzf nagios-plugins-2.3.3.tar.gz && \
     cd nagios-plugins-2.3.3 && \
     ./configure && make && make install
 
-# Configuración del usuario web y módulo CGI
+# Configura autenticación web y habilita CGI en Apache
 RUN htpasswd -cb /usr/local/nagios/etc/htpasswd.users nagiosadmin nagiosadmin && \
     a2enmod cgi
 
+# Expone el puerto web de Nagios
 EXPOSE 80
 
+# Comando para iniciar Nagios y mantener contenedor activo
 CMD ["/bin/bash", "-c", "service apache2 start && /usr/local/nagios/bin/nagios /usr/local/nagios/etc/nagios.cfg && tail -f /var/log/apache2/error.log"]
