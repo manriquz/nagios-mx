@@ -6,7 +6,7 @@ LABEL maintainer="cmanriquez"
 RUN apt-get update && \
     apt-get install -y wget build-essential apache2 php gcc make libgd-dev unzip libapache2-mod-php curl libssl-dev openssl apache2-utils
 
-# Crear grupo y usuario 'nagios' solo si no existen
+# Crea grupo y usuario nagios solo si no existen
 RUN groupadd -f nagios && \
     id -u nagios &>/dev/null || useradd -m -g nagios nagios && \
     usermod -a -G nagios www-data
@@ -30,11 +30,10 @@ RUN wget https://nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz && \
     cd nagios-plugins-2.3.3 && \
     ./configure && make && make install
 
-# Configura autenticación web y habilita CGI en Apache
+# Configura autenticación web y habilita CGI
 RUN htpasswd -cb /usr/local/nagios/etc/htpasswd.users nagiosadmin nagiosadmin && \
     a2enmod cgi
 
 EXPOSE 80
 
 CMD ["/bin/bash", "-c", "service apache2 start && /usr/local/nagios/bin/nagios /usr/local/nagios/etc/nagios.cfg && tail -f /var/log/apache2/error.log"]
-
